@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, lazy, Suspense } from 'react'
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { SpeedInsights } from '@vercel/speed-insights/react'
+import { Analytics } from '@vercel/analytics/react'
 import './App.css'
 import ProtectedRoute from './components/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -151,6 +152,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
+      <Analytics />
     </ErrorBoundary>
   )
 }
