@@ -8,6 +8,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import Loading from './components/Loading'
 
 const LoginPage = lazy(() => import('./pages/LoginPage'))
+const HomePage = lazy(() => import('./pages/HomePage'))
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
 const TeacherDashboard = lazy(() => import('./pages/TeacherDashboard'))
 const ParentDashboard = lazy(() => import('./pages/ParentDashboard'))
@@ -21,7 +22,7 @@ const getDashboardPath = (role) => {
   if (role === 'Admin') return '/admin'
   if (role === 'Teacher') return '/teacher'
   if (role === 'Parent') return '/parent'
-  return '/login'
+  return null
 }
 
 function App() {
@@ -37,10 +38,13 @@ function App() {
         const nextSession = loadSession()
         if (!nextSession && session) {
           setSession(null)
-          navigate('/login', { replace: true })
+          navigate('/', { replace: true })
         } else if (nextSession && !session) {
           setSession(nextSession)
-          navigate(getDashboardPath(nextSession.role), { replace: true })
+          const dashboardPath = getDashboardPath(nextSession.role)
+          if (dashboardPath) {
+            navigate(dashboardPath, { replace: true })
+          }
         }
       }
     }
@@ -49,13 +53,13 @@ function App() {
   }, [session, navigate])
 
   const homePath = useMemo(() => {
-    return getDashboardPath(session?.role)
+    return getDashboardPath(session?.role) || '/'
   }, [session])
 
   const handleLogout = () => {
     clearSession()
     setSession(null)
-    navigate('/login', { replace: true })
+    navigate('/', { replace: true })
   }
 
 // App.jsx
@@ -113,13 +117,17 @@ function App() {
           <Route
             path="/login"
             element={
-              <LoginPage
-                onLogin={handleLogin}
-                onChangePassword={handleChangePassword}
-                passwordChange={passwordChange}
-                isSubmitting={isSubmitting}
-                error={loginError}
-              />
+              session ? (
+                <Navigate to={homePath} replace />
+              ) : (
+                <LoginPage
+                  onLogin={handleLogin}
+                  onChangePassword={handleChangePassword}
+                  passwordChange={passwordChange}
+                  isSubmitting={isSubmitting}
+                  error={loginError}
+                />
+              )
             }
           />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -148,7 +156,16 @@ function App() {
             }
           />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
-          <Route path="/" element={<Navigate to={homePath} replace />} />
+          <Route
+            path="/"
+            element={
+              session ? (
+                <Navigate to={homePath} replace />
+              ) : (
+                <HomePage />
+              )
+            }
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

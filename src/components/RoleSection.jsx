@@ -1,4 +1,4 @@
-function RoleSection({ title, subtitle, features, reverse = false, id }) {
+function RoleSection({ title, subtitle, features, reverse = false, id, visual: Visual }) {
   return (
     <section id={id} className={`role-section ${reverse ? 'reverse' : ''}`}>
       <div className="role-content">
@@ -15,9 +15,13 @@ function RoleSection({ title, subtitle, features, reverse = false, id }) {
         </div>
       </div>
       <div className="role-visual">
-        {/* Placeholder for role-specific visual/illustration */}
-        <div className="visual-placeholder cyber-card pulse-badge">
-          <span className="neon-text">{title} Portal</span>
+        <div className="visual-wrapper cyber-card">
+          {Visual ? <Visual /> : (
+            <div className="visual-placeholder pulse-badge">
+              <span className="neon-text">{title} Portal</span>
+            </div>
+          )}
+          <div className="scanner-line" />
         </div>
       </div>
     </section>
