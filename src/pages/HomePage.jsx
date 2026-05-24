@@ -51,6 +51,7 @@ function HomePage() {
   const keyboardSectionIndexRef = useRef(0)
 
   useEffect(() => {
+    if (window.innerWidth <= 768) return;
     let rafId = null
     let cachedMaxScroll = 1;
 
