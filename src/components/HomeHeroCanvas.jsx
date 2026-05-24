@@ -239,26 +239,48 @@ function CardMesh({ card, deck, faceIndex }) {
 function CameraRig({ progressRef }) {
   const { camera } = useThree()
 
+  // Static vectors
   const leftPosition = useMemo(() => new THREE.Vector3(-5.35, 0.34, 3.22), [])
   const centerPosition = useMemo(() => new THREE.Vector3(0.08, 0.38, 3.02), [])
   const rightPosition = useMemo(() => new THREE.Vector3(0.4, 0.3, 5.24), [])
   const boardLook = useMemo(() => new THREE.Vector3(0, 0.1, -0.05), [])
   const desksLook = useMemo(() => new THREE.Vector3(0.05, -0.12, 0.18), [])
   const windowsLook = useMemo(() => new THREE.Vector3(0.75, 0.22, 0.52), [])
+  
+  // Vectors strictly for updating (No new allocations inside loop)
   const currentLook = useMemo(() => new THREE.Vector3(), [])
   const currentPosition = useMemo(() => new THREE.Vector3(), [])
+  const targetPosition = useMemo(() => new THREE.Vector3(), [])
+  const targetLook = useMemo(() => new THREE.Vector3(), [])
+  const tempVec = useMemo(() => new THREE.Vector3(), []) 
 
   useFrame(() => {
     const progress = progressRef.current
     const phase = progress * Math.PI * 2
-    const targetPosition = centerPosition.clone()
-      .add(leftPosition.clone().multiplyScalar(Math.max(0, Math.sin(phase)) * 0.45))
-      .add(rightPosition.clone().multiplyScalar(Math.max(0, Math.cos(phase * 0.85)) * 0.25))
-      .add(new THREE.Vector3(0, Math.sin(phase * 0.55) * 0.05, 0))
 
+    // 1. Reset target to center
+    targetPosition.copy(centerPosition)
+
+    // 2. Add left influence
+    const leftScale = Math.max(0, Math.sin(phase)) * 0.45
+    tempVec.copy(leftPosition).multiplyScalar(leftScale)
+    targetPosition.add(tempVec)
+
+    // 3. Add right influence
+    const rightScale = Math.max(0, Math.cos(phase * 0.85)) * 0.25
+    tempVec.copy(rightPosition).multiplyScalar(rightScale)
+    targetPosition.add(tempVec)
+
+    // 4. Add vertical sway (Directly modifying Y instead of making a new Vector3)
+    targetPosition.y += Math.sin(phase * 0.55) * 0.05
+
+    // 5. Calculate look target without cloning
     const lookMix = THREE.MathUtils.smoothstep(progress, 0.06, 0.92)
-    const targetLook = boardLook.clone().lerp(desksLook, lookMix).lerp(windowsLook, Math.max(0, Math.sin(phase * 0.5)) * 0.2)
+    targetLook.copy(boardLook)
+      .lerp(desksLook, lookMix)
+      .lerp(windowsLook, Math.max(0, Math.sin(phase * 0.5)) * 0.2)
 
+    // 6. Smooth camera movement
     currentPosition.lerp(targetPosition, 0.22)
     currentLook.lerp(targetLook, 0.22)
 
@@ -267,7 +289,8 @@ function CameraRig({ progressRef }) {
   })
 
   return null
-}
+    }
+
 
 function Scene({ progressRef }) {
   return (
