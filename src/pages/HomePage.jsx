@@ -52,15 +52,23 @@ function HomePage() {
 
   useEffect(() => {
     let rafId = null
+    let cachedMaxScroll = 1;
+
+    // Cache the height ONLY when the window resizes, not every frame
+    const updateMaxScroll = () => {
+      cachedMaxScroll = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1)
+    };
+    
+    updateMaxScroll();
+    window.addEventListener('resize', updateMaxScroll, { passive: true });
 
     const handleScroll = () => {
       if (!bgRef.current) return
-
       if (rafId !== null) return
 
       rafId = window.requestAnimationFrame(() => {
-        const documentHeight = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1)
-        const scrollPct = Math.min(Math.max(window.scrollY / documentHeight, 0), 1)
+        // Use the cached value instead of querying the DOM
+        const scrollPct = Math.min(Math.max(window.scrollY / cachedMaxScroll, 0), 1)
         bgRef.current.style.setProperty('--scroll-progress', scrollPct)
 
         const perspective = 1000 - scrollPct * 300
@@ -74,6 +82,7 @@ function HomePage() {
 
     return () => {
       window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', updateMaxScroll)
       if (rafId !== null) {
         window.cancelAnimationFrame(rafId)
       }
