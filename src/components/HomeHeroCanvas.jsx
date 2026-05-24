@@ -202,29 +202,21 @@ function CardMesh({ card, deck, faceIndex }) {
           color={tintB}
           emissive={tintA}
           emissiveIntensity={0.24 + card.hueShift * 0.12}
-          roughness={0.34}
-          metalness={0.24}
+          roughness={0.8} // Increased roughness is slightly cheaper
+          metalness={0.1}
         />
       </mesh>
 
+      {/* Changed to meshBasicMaterial - Unlit, pure texture mapping */}
       <mesh position={[0, 0, 0.026]}>
         <planeGeometry args={[0.9, 1.3]} />
-        <meshStandardMaterial
-          map={frontTexture}
-          color="#ffffff"
-          roughness={0.6}
-          metalness={0.05}
-        />
+        <meshBasicMaterial map={frontTexture} color="#ffffff" />
       </mesh>
 
+      {/* Changed to meshBasicMaterial */}
       <mesh position={[0, 0, -0.026]} rotation={[0, Math.PI, 0]}>
         <planeGeometry args={[0.9, 1.3]} />
-        <meshStandardMaterial
-          map={backTexture}
-          color="#ffffff"
-          roughness={0.6}
-          metalness={0.05}
-        />
+        <meshBasicMaterial map={backTexture} color="#ffffff" />
       </mesh>
     </group>
   )
@@ -289,20 +281,13 @@ function CameraRig({ progressRef }) {
 function Scene({ progressRef }) {
   return (
     <>
-      {/* Atmospheric fog for depth and cinematic feel */}
       <fog attach="fog" args={["#061020", 0.18]} />
 
-      {/* Key light + cool fill + subtle accent lights */}
-      <ambientLight intensity={0.24} color="#cfe8ff" />
-      <directionalLight position={[2.8, 4.2, 2.6]} intensity={1.35} color="#fff4d8" />
-      <directionalLight position={[-3.6, 1.8, -1.4]} intensity={0.6} color="#7ac7ff" />
-      <spotLight position={[0.6, 2.4, 2.2]} intensity={0.45} angle={0.6} penumbra={0.4} color="#ffd9b3" />
-      <pointLight position={[-1.8, -1.1, 1.2]} intensity={0.6} color="#4fd4b7" />
+      {/* Reduced from 5 lights to 2 essential lights */}
+      <ambientLight intensity={0.6} color="#cfe8ff" />
+      <directionalLight position={[2.8, 4.2, 2.6]} intensity={1.5} color="#fff4d8" />
 
-      {/* Distant gradient sky and soft backdrop */}
       <GradientSky />
-
-      {/* Depth particles to sell scale */}
       <Particles />
       <HaloField progressRef={progressRef} />
       <CardField progressRef={progressRef} />
@@ -410,6 +395,7 @@ function HomeHeroCanvas({ className = 'hero-canvas' }) {
   const wrapperRef = useRef(null)
   const progressRef = useRef(0)
   const targetProgressRef = useRef(0)
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
 
   useEffect(() => {
     const trigger = ScrollTrigger.create({
@@ -436,13 +422,13 @@ function HomeHeroCanvas({ className = 'hero-canvas' }) {
       trigger.kill()
     }
   }, [])
-  const isHighDPI = typeof window !== 'undefined' && window.devicePixelRatio > 1.5;
+  
   return (
-    <div className={className} ref={wrapperRef} aria-hidden="true">
+    <div className={className} ref={wrapperRef} aria-hidden="true" style={{ pointerEvents: 'none' }}>
       <Canvas
         camera={{ position: [0, 0.15, 2.8], fov: 20 }}
-        gl={{ antialias: !isHighDPI, alpha: true, powerPreference: "high-performance" }}
-        dpr={[1, 1.5]}
+        gl={{ antialias: false, alpha: true, powerPreference: "high-performance" }}
+        dpr={isMobile ? 1 : Math.min(window.devicePixelRatio, 1.5)}
       >
         <ProgressSmoother progressRef={progressRef} targetProgressRef={targetProgressRef} />
         <Scene progressRef={progressRef} />
