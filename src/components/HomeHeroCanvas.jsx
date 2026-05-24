@@ -204,8 +204,6 @@ function CardMesh({ card, deck, faceIndex }) {
           emissiveIntensity={0.24 + card.hueShift * 0.12}
           roughness={0.34}
           metalness={0.24}
-          transparent
-          opacity={0.88}
         />
       </mesh>
 
@@ -214,8 +212,6 @@ function CardMesh({ card, deck, faceIndex }) {
         <meshStandardMaterial
           map={frontTexture}
           color="#ffffff"
-          transparent
-          opacity={0.98}
           roughness={0.6}
           metalness={0.05}
         />
@@ -226,8 +222,6 @@ function CardMesh({ card, deck, faceIndex }) {
         <meshStandardMaterial
           map={backTexture}
           color="#ffffff"
-          transparent
-          opacity={0.98}
           roughness={0.6}
           metalness={0.05}
         />
@@ -442,13 +436,13 @@ function HomeHeroCanvas({ className = 'hero-canvas' }) {
       trigger.kill()
     }
   }, [])
-
+  const isHighDPI = typeof window !== 'undefined' && window.devicePixelRatio > 1.5;
   return (
     <div className={className} ref={wrapperRef} aria-hidden="true">
       <Canvas
         camera={{ position: [0, 0.15, 2.8], fov: 20 }}
-        gl={{ antialias: true, alpha: true }}
-        dpr={[1, 1.6]}
+        gl={{ antialias: !isHighDPI, alpha: true, powerPreference: "high-performance" }}
+        dpr={[1, 1.5]}
       >
         <ProgressSmoother progressRef={progressRef} targetProgressRef={targetProgressRef} />
         <Scene progressRef={progressRef} />
