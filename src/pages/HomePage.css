@@ -1200,3 +1200,36 @@ body::after {
     text-align: center;
   }
 }
+
+/* 💥 NUCLEAR MOBILE OPTIMIZATIONS 💥 */
+@media (max-width: 768px) {
+  /* 1. Kill the 90px blur elements and redundant layers completely */
+  .fluid-orbs, 
+  .perspective-grid, 
+  .retro-grid, 
+  .floating-particles,
+  .light-beams,
+  .circuit-trace {
+    display: none !important;
+  }
+
+  /* 2. Remove backdrop-filter blurs. They destroy mobile frame rates */
+  .home-nav,
+  .feature-card,
+  .visual-wrapper {
+    backdrop-filter: none !important;
+    background: #0a1122 !important; /* Fallback solid color */
+  }
+
+  /* 3. Kill the animated gradient filter */
+  .mesh-gradient-base {
+    animation: none !important;
+    filter: none !important;
+    background: #081028 !important; /* Solid fallback */
+  }
+
+  /* 4. Stop the browser from dedicating memory to transformations that won't happen */
+  .immersive-bg {
+    will-change: auto !important;
+  }
+}
