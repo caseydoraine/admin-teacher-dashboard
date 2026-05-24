@@ -122,6 +122,10 @@ function CardField({ progressRef }) {
 
   const textureLoader = useMemo(() => new THREE.TextureLoader(), [])
 
+  // Detect mobile and cut the number of cards in half to save GPU overhead
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+  const cardCount = isMobile ? 12 : 28; 
+
   const deckTextures = useMemo(() => {
     const loadedDecks = CARD_DECKS.map((deck) => ({
       label: deck.label,
@@ -145,7 +149,7 @@ function CardField({ progressRef }) {
 
   const cards = useMemo(
     () =>
-      Array.from({ length: 28 }, (_, index) => ({
+      Array.from({ length: cardCount }, (_, index) => ({
         key: index,
         position: [
           (seededValue(index, 1) - 0.5) * 3.6,
@@ -162,7 +166,7 @@ function CardField({ progressRef }) {
         deckIndex: index % deckTextures.length,
         faceIndex: Math.floor(seededValue(index, 9) * 12),
       })),
-    [deckTextures.length],
+    [deckTextures.length, cardCount],
   )
 
   useFrame((_, delta) => {
@@ -175,45 +179,43 @@ function CardField({ progressRef }) {
   return (
     <group ref={groupRef} position={[0.15, -0.1, 0.5]}>
       {cards.map((card) => (
-        <Float
-          key={card.key}
-          speed={1.2 + card.hueShift}
-          rotationIntensity={1.1}
-          floatIntensity={1.0}
-        >
-          <CardMesh card={card} deck={deckTextures[card.deckIndex]} faceIndex={card.faceIndex} />
-        </Float>
+        <CardMesh 
+          key={card.key} 
+          card={card} 
+          deck={deckTextures[card.deckIndex]} 
+          faceIndex={card.faceIndex} 
+        />
       ))}
     </group>
   )
 }
 
 function CardMesh({ card, deck, faceIndex }) {
+  const meshRef = useRef(null)
   const frontTexture = deck.faces[faceIndex % deck.faces.length]
   const backTexture = deck.back
-  const tintA = deck.tint[0]
   const tintB = deck.tint[1]
 
+  // Extremely lightweight mathematical hover instead of heavy physics calculations
+  useFrame((state) => {
+    if (!meshRef.current) return
+    const time = state.clock.elapsedTime
+    meshRef.current.position.y = card.position[1] + Math.sin(time * (1.2 + card.hueShift) + card.key) * 0.1
+  })
+
   return (
-    <group position={card.position} rotation={card.rotation} scale={card.scale}>
+    <group ref={meshRef} position={card.position} rotation={card.rotation} scale={card.scale}>
       <mesh>
         <boxGeometry args={[1, 1.45, 0.04]} />
-        <meshStandardMaterial
-          color={tintB}
-          emissive={tintA}
-          emissiveIntensity={0.24 + card.hueShift * 0.12}
-          roughness={0.8} // Increased roughness is slightly cheaper
-          metalness={0.1}
-        />
+        {/* Changed from Standard to Basic Material. No lighting calculations needed! */}
+        <meshBasicMaterial color={tintB} />
       </mesh>
 
-      {/* Changed to meshBasicMaterial - Unlit, pure texture mapping */}
       <mesh position={[0, 0, 0.026]}>
         <planeGeometry args={[0.9, 1.3]} />
         <meshBasicMaterial map={frontTexture} color="#ffffff" />
       </mesh>
 
-      {/* Changed to meshBasicMaterial */}
       <mesh position={[0, 0, -0.026]} rotation={[0, Math.PI, 0]}>
         <planeGeometry args={[0.9, 1.3]} />
         <meshBasicMaterial map={backTexture} color="#ffffff" />
