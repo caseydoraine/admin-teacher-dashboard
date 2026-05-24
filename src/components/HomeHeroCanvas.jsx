@@ -435,7 +435,7 @@ function HomeHeroCanvas({ className = 'hero-canvas' }) {
       <Canvas
         camera={{ position: [0, 0.15, 2.8], fov: 20 }}
         gl={{ antialias: false, alpha: true, powerPreference: "high-performance", precision: isMobile ? "lowp" : "highp" }}
-        dpr={isMobile ? 0.5 : Math.min(window.devicePixelRatio, 1.5)}
+        dpr={isMobile ? 0.75 : Math.min(window.devicePixelRatio, 1.5)}
       >
         <ProgressSmoother progressRef={progressRef} targetProgressRef={targetProgressRef} />
         <Scene progressRef={progressRef} />
