@@ -201,6 +201,7 @@ html {
   overflow: hidden;
   background: #16233d; /* Solid fallback */
   transition: transform 0.2s cubic-bezier(0.1, 0.5, 0.1, 1);
+  will-change: transform, perspective;
 }
 
 .perspective-grid {
