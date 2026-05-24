@@ -522,6 +522,8 @@ body::after {
 .hero-canvas {
   position: absolute;
   inset: 0;
+  pointer-events: none !important; 
+  touch-action: none !important;
 }
 
 .home-canvas-bg {
@@ -544,6 +546,11 @@ body::after {
   width: 100%;
   height: 100%;
   display: block;
+}
+
+canvas {
+  /* Ensure the child canvas also ignores touches */
+  pointer-events: none !important;
 }
 
 .btn-large {
