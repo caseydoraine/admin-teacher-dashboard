@@ -281,17 +281,22 @@ function CameraRig({ progressRef }) {
 
 
 function Scene({ progressRef }) {
+  // Detect mobile aggressively
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+
   return (
     <>
       <fog attach="fog" args={["#061020", 0.18]} />
-
-      {/* Reduced from 5 lights to 2 essential lights */}
+      
       <ambientLight intensity={0.6} color="#cfe8ff" />
       <directionalLight position={[2.8, 4.2, 2.6]} intensity={1.5} color="#fff4d8" />
 
       <GradientSky />
-      <Particles />
-      <HaloField progressRef={progressRef} />
+      
+      {/* 💥 ULTIMATE FIX: Completely remove transparent systems on mobile */}
+      {!isMobile && <Particles />}
+      {!isMobile && <HaloField progressRef={progressRef} />}
+      
       <CardField progressRef={progressRef} />
       <CameraRig progressRef={progressRef} />
     </>
@@ -429,8 +434,8 @@ function HomeHeroCanvas({ className = 'hero-canvas' }) {
     <div className={className} ref={wrapperRef} aria-hidden="true" style={{ pointerEvents: 'none' }}>
       <Canvas
         camera={{ position: [0, 0.15, 2.8], fov: 20 }}
-        gl={{ antialias: false, alpha: true, powerPreference: "high-performance" }}
-        dpr={isMobile ? 1 : Math.min(window.devicePixelRatio, 1.5)}
+        gl={{ antialias: false, alpha: true, powerPreference: "high-performance", precision: isMobile ? "lowp" : "highp" }}
+        dpr={isMobile ? 0.5 : Math.min(window.devicePixelRatio, 1.5)}
       >
         <ProgressSmoother progressRef={progressRef} targetProgressRef={targetProgressRef} />
         <Scene progressRef={progressRef} />
